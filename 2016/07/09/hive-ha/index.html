@@ -11,7 +11,7 @@
 <meta property="og:url" content="http://blog.amitanand.net/2016/07/09/hive-ha/index.html">
 <meta property="og:site_name" content="Amit Anand">
 <meta property="og:description" content="In this blog I am going to show you how to enable High Availability for HiveServer2. The HiveServer2, like NameNode that at present only allow 2 nodes, does not have any limit on number of servers tha">
-<meta property="og:updated_time" content="2016-07-09T20:46:46.766Z">
+<meta property="og:updated_time" content="2016-07-09T20:47:33.994Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Enable HA for HiveServer2">
 <meta name="twitter:description" content="In this blog I am going to show you how to enable High Availability for HiveServer2. The HiveServer2, like NameNode that at present only allow 2 nodes, does not have any limit on number of servers tha">
@@ -72,7 +72,7 @@
         <section id="main"><article id="post-hive-ha" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2016/07/09/hive-ha/" class="article-date">
-  <time datetime="2016-07-09T20:46:46.770Z" itemprop="datePublished">2016-07-09</time>
+  <time datetime="2016-07-09T20:47:34.002Z" itemprop="datePublished">2016-07-09</time>
 </a>
     
   <div class="article-category">
@@ -95,7 +95,7 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>In this blog I am going to show you how to enable <strong>High Availability</strong> for <strong>HiveServer2</strong>. The <strong>HiveServer2</strong>, like <strong>NameNode that at present only allow 2 nodes</strong>, does not have any limit on number of servers that can be added to <strong>HA</strong> configuration. Also it doesn’t provide any failover mechanism. A client will have to reconnect, in case a connetion to current <strong>HiveServer2</strong> is lost. Below are the requirements to enable <strong>High Availability</strong> for <strong>HiveServer2</strong>.<br><a id="more"></a></p>
+        <p>In this blog I am going to show you how to enable <strong>High Availability</strong> for <strong>HiveServer2</strong>. The <strong>HiveServer2</strong>, like <strong>NameNode</strong> that at present only allow 2 nodes, does not have any limit on number of servers that can be added to <strong>HA</strong> configuration. Also it doesn’t provide any failover mechanism. A client will have to reconnect, in case a connetion to current <strong>HiveServer2</strong> is lost. Below are the requirements to enable <strong>High Availability</strong> for <strong>HiveServer2</strong>.<br><a id="more"></a></p>
 <h4 id="ZooKeeper"><a href="#ZooKeeper" class="headerlink" title="ZooKeeper"></a>ZooKeeper</h4><p>Zookeeper is used to store information about each <strong>HS2</strong> instarnce that is launched and registered with Zookeeper. A client, upon connection request, gets one of the registered <strong>HS2</strong> instance.</p>
 <h4 id="Multiple-HiveServer2-instances"><a href="#Multiple-HiveServer2-instances" class="headerlink" title="Multiple HiveServer2 instances"></a>Multiple HiveServer2 instances</h4><p>To enable HA more than one instance of <strong>HS2</strong> is required. Multiple instances can run either on the same server with different port for each instance or on two different machines using same port number. If one of the instance fails, Zookeeper will return the next active <strong>HS2</strong> instance. Running multiple instances provides following benefits:</p>
 <ul>
@@ -140,7 +140,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://blog.amitanand.net/2016/07/09/hive-ha/" data-id="ciqfn69640000v8reynsifd1k" class="article-share-link">Share</a>
+      <a data-url="http://blog.amitanand.net/2016/07/09/hive-ha/" data-id="ciqfn6jnw0000vurese346fgj" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/HIVEQL/">HIVEQL</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/HS2/">HS2</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Hive/">Hive</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Hiveserver2/">Hiveserver2</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/SQL/">SQL</a></li></ul>
