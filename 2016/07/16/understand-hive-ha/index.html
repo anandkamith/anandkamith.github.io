@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Understanding Hive HA | Amit Anand</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="In my blog Enable HA for HiveServer2, I talked about configuration that is needed to enable High Availability (HA) for HiveServer2 (HS2). In this blog I want to take a deep dive into the architecture">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Understanding Hive HA">
+<meta property="og:url" content="http://blog.amitanand.net/2016/07/16/understand-hive-ha/index.html">
+<meta property="og:site_name" content="Amit Anand">
+<meta property="og:description" content="In my blog Enable HA for HiveServer2, I talked about configuration that is needed to enable High Availability (HA) for HiveServer2 (HS2). In this blog I want to take a deep dive into the architecture">
+<meta property="og:image" content="http://blog.amitanand.net/2016/07/16/understand-hive-ha/HiveHADesign.png">
+<meta property="og:updated_time" content="2016-07-16T16:25:16.771Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Understanding Hive HA">
+<meta name="twitter:description" content="In my blog Enable HA for HiveServer2, I talked about configuration that is needed to enable High Availability (HA) for HiveServer2 (HS2). In this blog I want to take a deep dive into the architecture">
+<meta name="twitter:image" content="http://blog.amitanand.net/2016/07/16/understand-hive-ha/HiveHADesign.png">
+  
+    <link rel="alternate" href="/atom.xml" title="Amit Anand" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Amit Anand</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">Few things to share</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+          <a class="main-nav-link" href="/about">About</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="Flux RSS"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Rechercher"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://blog.amitanand.net"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-understand-hive-ha" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/07/16/understand-hive-ha/" class="article-date">
+  <time datetime="2016-07-16T18:08:48.000Z" itemprop="datePublished">2016-07-16</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Hive/">Hive</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Understanding Hive HA
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>In my blog <a href="http://blog.amitanand.net/2016/07/09/hive-ha/">Enable HA for HiveServer2</a>, I talked about configuration that is needed to enable <strong>High Availability (HA)</strong> for <strong>HiveServer2 (HS2)</strong>. In this blog I want to take a deep dive into the architecture behind HA of HS2. Let’s start with understanding the core components involved.<br><a id="more"></a></p>
+<ol>
+<li>JDBC Client – A client application/user that uses a JDBC connection URL to talk to ZooKeeper to get connection information about one of the HS2. The connection string is in the form of<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">jdbc:hive2://&lt;ZKS:PORT&gt;/&lt;DB&gt;;serviceDiscoveryMode=zooKeeper;zooKeeperNamespace=hiveserver2;</div></pre></td></tr></table></figure>
+</li>
+</ol>
+<p>Where</p>
+<ul>
+<li><em>ZKS</em> is list of zookeeper servers separated by a comma</li>
+<li><em>PORT</em> is zookeeper client port</li>
+<li><em>DB</em> is the <strong>Hive</strong> Database you want to connect to</li>
+</ul>
+<ol>
+<li><p>ZooKeeper – A state store that registers multiple instances of HS2 and returns one of them when a client requests for it. The <strong>Zookeeper Znode</strong> upon query will show something like</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">ubuntu@bcpc-vm1:~$ zookeeper-client -server f-bcpc-vm1.bcpc.example.com:2181 ls /HiveServer2</div><div class="line">Connecting to f-bcpc-vm1.bcpc.example.com:2181</div><div class="line"></div><div class="line">[serverUri=f-bcpc-vm2.bcpc.example.com:10000;version=1.2.1.2.3.4.0-3485;sequence=0000000007]</div></pre></td></tr></table></figure>
+</li>
+<li><p>HiveServer2 – More than once instance of HS2 running on either same machine using different port number or running multiple machines using same/different port number</p>
+</li>
+<li><p>Hadoop Cluster – A client reads/writes data from after connecting to HS2.</p>
+</li>
+</ol>
+<p>Below is the step by step explanation of how a client session gets established with <strong>HS2</strong></p>
+<img src="/2016/07/16/understand-hive-ha/HiveHADesign.png" alt="HiveHADesign.png" title="">
+<ul>
+<li><p>Step 1<br>A JDBC client connects to ZooKeeper ensemble to discover currently registered HS2 instances using URL akin to</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">jdbc:hive2://&lt;ZKS:PORT&gt;/&lt;DB&gt;;serviceDiscoveryMode=zooKeeper;zooKeeperNamespace=hiveserver2;</div></pre></td></tr></table></figure>
+</li>
+<li><p>Step 2<br>ZK retrieves connection information for one of the registered HS2 and returns it to the client</p>
+</li>
+<li><p>Step 3<br>Upon receiving connection information from ZK, a client attempts to connect to HS2</p>
+</li>
+<li><p>Step 4<br>After making a connection to HS2, client continues to read/write data from Hadoop Cluster</p>
+</li>
+</ul>
+<h3 id="Unregister-a-HiveServer2-instance-from-Zookeeper"><a href="#Unregister-a-HiveServer2-instance-from-Zookeeper" class="headerlink" title="Unregister a HiveServer2 instance from Zookeeper"></a>Unregister a HiveServer2 instance from Zookeeper</h3><p>There are two ways to remove a registered <strong>HS2</strong> instance from <strong>ZK</strong></p>
+<h5 id="Remove-Znode-from-ZK"><a href="#Remove-Znode-from-ZK" class="headerlink" title="Remove Znode from ZK"></a>Remove Znode from ZK</h5><p>Launch the Zookeeper command line interface:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">Zookeeper-client -server f-bcpc-vm1.bcpc.example.com:2181</div></pre></td></tr></table></figure></p>
+<p>Run the following command to list all registered instances<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">ls /HiveServer2</div></pre></td></tr></table></figure></p>
+<p>You should see something similar to:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">[serverUri=f-bcpc-vm2.bcpc.example.com:10000;version=1.2.1.2.3.4.0-3485;sequence=0000000007]</div><div class="line">[serverUri=f-bcpc-vm3.bcpc.example.com:10000;version=1.2.1.2.3.4.0-3485;sequence=0000000008]</div></pre></td></tr></table></figure></p>
+<p>To remove a particular registered instance, in ZK command line interface, execute following command:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">delete /HiveServer2/serverUri=f-bcpc-vm2.bcpc.example.com:10000;version=1.2.1.2.3.4.0-3485;sequence=0000000007</div></pre></td></tr></table></figure></p>
+<h5 id="Use-HS2-deregister-command"><a href="#Use-HS2-deregister-command" class="headerlink" title="Use HS2 deregister command"></a>Use HS2 deregister command</h5><p>To remove all registered instances, execute the following command from the command line:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">hive --service hiveserverf2 --deregister &lt;version number&gt;</div></pre></td></tr></table></figure></p>
+<p>Example:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">hive --service hiveserver2 --deregister 1.2.1.2.3.4.0-3485</div></pre></td></tr></table></figure></p>
+<p><strong>Please note that after deregistering the HS2 from ZK, the deregistered HS2 will not be returned for any new client connections. However, any active client sessions are not impacted by this.</strong></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://blog.amitanand.net/2016/07/16/understand-hive-ha/" data-id="ciqpdzlrj0002xjremcjgonlu" class="article-share-link">Partager</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/HS2/">HS2</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Hive/">Hive</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Hiveserver2/">Hiveserver2</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/SQL/">SQL</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2016/07/09/hive-ha/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Ancien</strong>
+      <div class="article-nav-title">Enable HA for HiveServer2</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Catégories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Hive/">Hive</a><span class="category-list-count">2</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/07/">July 2016</a><span class="archive-list-count">2</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Articles récents</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2016/07/16/understand-hive-ha/">Understanding Hive HA</a>
+          </li>
+        
+          <li>
+            <a href="/2016/07/09/hive-ha/">Enable HA for HiveServer2</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2016 Amit Anand<br>
+      Propulsé by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+    <a href="/about" class="mobile-nav-link">About</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>
