@@ -67,6 +67,67 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-understand-hive-ha" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/07/10/understand-hive-ha/" class="article-date">
+  <time datetime="2016-07-10T18:08:48.000Z" itemprop="datePublished">2016-07-10</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Hive/">Hive</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/07/10/understand-hive-ha/">Understanding Hive HA</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>In my blog <a href="http://blog.amitanand.net/2016/07/09/hive-ha/">Enable HA for HiveServer2</a>, I talked about configuration that is needed to enable High Availability (HA) for HiveServr2 (HS2). In this blog I want to take a deep dive into the architecture behind HA of HS2. Let’s start with understanding the core components involved:</p>
+<ol>
+<li><p>JDBC Client – A client application/user that uses a JDBC connection URL to talk to ZooKeeper to get connection information on one of the HS2</p>
+</li>
+<li><p>ZooKeeper – A state store that registers multiple instances of HS2 and returns one of them when a client requests for it</p>
+</li>
+<li><p>HiveServer2 – More than once instance of HS2 running on either same machine using different port number or running multiple machines using same/different port number</p>
+</li>
+<li><p>Hadoop Cluster – A client reads/writes data from after connecting to HS2.</p>
+</li>
+</ol>
+<p>Let me explain this with the help of a diagram.</p>
+<img src="/2016/07/10/understand-hive-ha/HiveHADesign.png" alt="HiveHADesign.png" title="">
+<p>In step 1 a JDBC client connects to ZooKeeper ensemble to discover currently registered HS2 instances. The syntax for connecting to ZK is:</p>
+<p>[Syntax goes here]</p>
+<p>In step 2 ZK returns connection information for one of the registered HS2 and returns it to the client</p>
+<p>In step 3 upon receiving connection information from ZK, a client attempts to connect to HS2</p>
+<p>In step 4 after making a connection to HS2, client continues to read/write data from Hadoop Cluster.</p>
+<p>[Talk about HS2 deregister process] </p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://blog.amitanand.net/2016/07/10/understand-hive-ha/" data-id="ciqpcrm550001k4re79uelri7" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Hive/">Hive</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-hive-ha" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2016/07/09/hive-ha/" class="article-date">
@@ -102,7 +163,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://blog.amitanand.net/2016/07/09/hive-ha/" data-id="ciqfsd7so00002vreqksryabt" class="article-share-link">Share</a>
+      <a data-url="http://blog.amitanand.net/2016/07/09/hive-ha/" data-id="ciqpcrm500000k4rescuv91ro" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/HIVEQL/">HIVEQL</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/HS2/">HS2</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Hive/">Hive</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Hiveserver2/">Hiveserver2</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/SQL/">SQL</a></li></ul>
@@ -123,7 +184,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Categories</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Hive/">Hive</a><span class="category-list-count">1</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Hive/">Hive</a><span class="category-list-count">2</span></li></ul>
     </div>
   </div>
 
@@ -133,7 +194,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/07/">July 2016</a><span class="archive-list-count">1</span></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/07/">July 2016</a><span class="archive-list-count">2</span></li></ul>
     </div>
   </div>
 
@@ -144,6 +205,10 @@
     <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2016/07/10/understand-hive-ha/">Understanding Hive HA</a>
+          </li>
         
           <li>
             <a href="/2016/07/09/hive-ha/">Enable HA for HiveServer2</a>

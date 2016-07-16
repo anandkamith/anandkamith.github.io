@@ -3,18 +3,20 @@
 <head>
   <meta charset="utf-8">
   
-  <title>resume | Amit Anand</title>
+  <title>Understanding Hive HA | Amit Anand</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="wola!!">
-<meta property="og:type" content="website">
-<meta property="og:title" content="resume">
-<meta property="og:url" content="http://blog.amitanand.net/resume/index.html">
+  <meta name="description" content="In my blog Enable HA for HiveServer2, I talked about configuration that is needed to enable High Availability (HA) for HiveServr2 (HS2). In this blog I want to take a deep dive into the architecture b">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Understanding Hive HA">
+<meta property="og:url" content="http://blog.amitanand.net/2016/07/10/understand-hive-ha/index.html">
 <meta property="og:site_name" content="Amit Anand">
-<meta property="og:description" content="wola!!">
-<meta property="og:updated_time" content="2016-07-09T17:47:03.362Z">
+<meta property="og:description" content="In my blog Enable HA for HiveServer2, I talked about configuration that is needed to enable High Availability (HA) for HiveServr2 (HS2). In this blog I want to take a deep dive into the architecture b">
+<meta property="og:image" content="http://blog.amitanand.net/2016/07/10/understand-hive-ha/HiveHADesign.png">
+<meta property="og:updated_time" content="2016-07-16T15:54:08.415Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="resume">
-<meta name="twitter:description" content="wola!!">
+<meta name="twitter:title" content="Understanding Hive HA">
+<meta name="twitter:description" content="In my blog Enable HA for HiveServer2, I talked about configuration that is needed to enable High Availability (HA) for HiveServr2 (HS2). In this blog I want to take a deep dive into the architecture b">
+<meta name="twitter:image" content="http://blog.amitanand.net/2016/07/10/understand-hive-ha/HiveHADesign.png">
   
     <link rel="alternate" href="/atom.xml" title="Amit Anand" type="application/atom+xml">
   
@@ -69,12 +71,16 @@
   </div>
 </header>
       <div class="outer">
-        <section id="main"><article id="page-undefined" class="article article-type-page" itemscope itemprop="blogPost">
+        <section id="main"><article id="post-understand-hive-ha" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
-    <a href="/resume/index.html" class="article-date">
-  <time datetime="2016-07-09T17:45:51.000Z" itemprop="datePublished">2016-07-09</time>
+    <a href="/2016/07/10/understand-hive-ha/" class="article-date">
+  <time datetime="2016-07-10T18:08:48.000Z" itemprop="datePublished">2016-07-10</time>
 </a>
     
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Hive/">Hive</a>
+  </div>
+
   </div>
   <div class="article-inner">
     
@@ -83,7 +89,7 @@
         
   
     <h1 class="article-title" itemprop="name">
-      resume
+      Understanding Hive HA
     </h1>
   
 
@@ -91,18 +97,48 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>wola!!</p>
+        <p>In my blog <a href="http://blog.amitanand.net/2016/07/09/hive-ha/">Enable HA for HiveServer2</a>, I talked about configuration that is needed to enable High Availability (HA) for HiveServr2 (HS2). In this blog I want to take a deep dive into the architecture behind HA of HS2. Let’s start with understanding the core components involved:</p>
+<ol>
+<li><p>JDBC Client – A client application/user that uses a JDBC connection URL to talk to ZooKeeper to get connection information on one of the HS2</p>
+</li>
+<li><p>ZooKeeper – A state store that registers multiple instances of HS2 and returns one of them when a client requests for it</p>
+</li>
+<li><p>HiveServer2 – More than once instance of HS2 running on either same machine using different port number or running multiple machines using same/different port number</p>
+</li>
+<li><p>Hadoop Cluster – A client reads/writes data from after connecting to HS2.</p>
+</li>
+</ol>
+<p>Let me explain this with the help of a diagram.</p>
+<img src="/2016/07/10/understand-hive-ha/HiveHADesign.png" alt="HiveHADesign.png" title="">
+<p>In step 1 a JDBC client connects to ZooKeeper ensemble to discover currently registered HS2 instances. The syntax for connecting to ZK is:</p>
+<p>[Syntax goes here]</p>
+<p>In step 2 ZK returns connection information for one of the registered HS2 and returns it to the client</p>
+<p>In step 3 upon receiving connection information from ZK, a client attempts to connect to HS2</p>
+<p>In step 4 after making a connection to HS2, client continues to read/write data from Hadoop Cluster.</p>
+<p>[Talk about HS2 deregister process] </p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://blog.amitanand.net/resume/index.html" data-id="ciqpcrm61000fk4re8styq8bg" class="article-share-link">Share</a>
+      <a data-url="http://blog.amitanand.net/2016/07/10/understand-hive-ha/" data-id="ciqpcrm550001k4re79uelri7" class="article-share-link">Share</a>
       
       
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Hive/">Hive</a></li></ul>
+
     </footer>
   </div>
   
     
+<nav id="article-nav">
+  
+  
+    <a href="/2016/07/09/hive-ha/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Enable HA for HiveServer2</div>
+    </a>
+  
+</nav>
+
   
 </article>
 
